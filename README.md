@@ -1,5 +1,5 @@
 # 🧬 Integrative Analysis of Gene Expression and Genetic Variants for Lung Cancer Classification
-
+![Alt Text](gene.jpeg)
 ![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)
 ![Machine Learning](https://img.shields.io/badge/Machine%20Learning-Random%20Forest%20%7C%20SVM%20%7C%20LogReg-orange)
 ![Bioinformatics](https://img.shields.io/badge/Bioinformatics-GEO%20%7C%20ClinVar-green)
