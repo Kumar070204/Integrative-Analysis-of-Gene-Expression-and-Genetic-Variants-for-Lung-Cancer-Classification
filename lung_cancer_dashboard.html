@@ -1,0 +1,1008 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lung Cancer Gene Intelligence Center</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  :root {
+    --bg: #ffffff;
+    --bg2: #f7f7f5;
+    --bg3: #f0efe9;
+    --bginfo: #e6f1fb;
+    --text: #1a1a18;
+    --text2: #5f5e5a;
+    --text3: #888780;
+    --border: rgba(0,0,0,0.10);
+    --border2: rgba(0,0,0,0.18);
+    --radius: 8px;
+    --radius-lg: 12px;
+    --blue: #378ADD;
+    --blue-light: #e6f1fb;
+    --blue-dark: #0C447C;
+    --green: #1D9E75;
+    --green-light: #EAF3DE;
+    --green-dark: #27500A;
+    --red: #D85A30;
+    --red-light: #FCEBEB;
+    --red-dark: #791F1F;
+    --amber: #BA7517;
+    --amber-light: #FAEEDA;
+    --amber-dark: #633806;
+    --gray: #888780;
+    --gray-light: #F1EFE8;
+    --teal: #0F6E56;
+    --purple: #534AB7;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1c1c1a;
+      --bg2: #252523;
+      --bg3: #2e2e2b;
+      --bginfo: #0c2240;
+      --text: #e8e7e2;
+      --text2: #a8a79f;
+      --text3: #6e6d67;
+      --border: rgba(255,255,255,0.10);
+      --border2: rgba(255,255,255,0.18);
+      --blue-light: #0c2240;
+      --blue-dark: #B5D4F4;
+      --green-light: #173404;
+      --green-dark: #C0DD97;
+      --red-light: #501313;
+      --red-dark: #F7C1C1;
+      --amber-light: #412402;
+      --amber-dark: #FAC775;
+      --gray-light: #2C2C2A;
+    }
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background: var(--bg3);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  /* ── TOP NAV ── */
+  .nav {
+    background: var(--bg);
+    border-bottom: 0.5px solid var(--border);
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 52px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .nav-left { display: flex; align-items: center; gap: 12px; }
+  .nav-logo {
+    width: 28px; height: 28px;
+    background: linear-gradient(135deg, var(--blue) 0%, var(--teal) 100%);
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .nav-logo svg { width: 16px; height: 16px; fill: #fff; }
+  .nav-title { font-size: 15px; font-weight: 500; color: var(--text); }
+  .nav-sub { font-size: 12px; color: var(--text2); }
+  .nav-badges { display: flex; gap: 6px; }
+  .badge {
+    font-size: 11px; padding: 3px 10px;
+    border-radius: 20px;
+    border: 0.5px solid var(--border);
+    color: var(--text2);
+    background: var(--bg2);
+  }
+
+  /* ── LAYOUT ── */
+  .page { padding: 20px 24px; display: flex; flex-direction: column; gap: 16px; max-width: 1400px; margin: 0 auto; }
+
+  /* ── METRIC CARDS ── */
+  .metrics { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
+  .metric-card {
+    background: var(--bg);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 14px 16px;
+    display: flex; flex-direction: column; gap: 2px;
+  }
+  .metric-card .icon { font-size: 18px; margin-bottom: 4px; }
+  .metric-card .val { font-size: 24px; font-weight: 500; color: var(--text); }
+  .metric-card .lbl { font-size: 12px; color: var(--text2); }
+  .metric-card .sub { font-size: 11px; color: var(--text3); margin-top: 1px; }
+  .metric-card.accent-blue { border-left: 3px solid var(--blue); }
+  .metric-card.accent-green { border-left: 3px solid var(--green); }
+  .metric-card.accent-red { border-left: 3px solid var(--red); }
+  .metric-card.accent-amber { border-left: 3px solid var(--amber); }
+  .metric-card.accent-purple { border-left: 3px solid var(--purple); }
+
+  /* ── MAIN GRID ── */
+  .main-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 360px;
+    gap: 16px;
+    align-items: start;
+  }
+
+  /* ── PANELS ── */
+  .panel {
+    background: var(--bg);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+  }
+  .panel-header {
+    padding: 12px 16px;
+    border-bottom: 0.5px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .panel-title { font-size: 13px; font-weight: 500; color: var(--text); }
+  .panel-sub { font-size: 11px; color: var(--text3); }
+  .panel-body { padding: 16px; }
+
+  /* ── VOLCANO ── */
+  .volcano-container { position: relative; height: 320px; padding: 12px; }
+  .volcano-legend {
+    display: flex; gap: 14px; padding: 0 12px 10px;
+    flex-wrap: wrap;
+  }
+  .leg-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text2); }
+  .leg-dot { width: 10px; height: 10px; border-radius: 2px; }
+
+  /* ── RANKING TABLE ── */
+  .table-filters {
+    display: flex; gap: 10px; align-items: center; padding: 10px 16px;
+    border-bottom: 0.5px solid var(--border);
+    flex-wrap: wrap; background: var(--bg2);
+  }
+  .filter-group { display: flex; align-items: center; gap: 6px; }
+  .filter-group label { font-size: 11px; color: var(--text2); white-space: nowrap; }
+  .filter-group select, .filter-group input[type=range] {
+    font-size: 11px; height: 26px;
+    background: var(--bg);
+    border: 0.5px solid var(--border2);
+    border-radius: 6px;
+    color: var(--text);
+  }
+  .filter-group select { padding: 0 6px; }
+  .filter-group input[type=range] { width: 80px; cursor: pointer; }
+  .rv { font-size: 11px; font-weight: 500; color: var(--text); min-width: 20px; }
+
+  .chr-filter { display: flex; gap: 4px; flex-wrap: wrap; padding: 8px 16px; border-bottom: 0.5px solid var(--border); background: var(--bg2); }
+  .chr-chip {
+    font-size: 10px; padding: 3px 8px; border-radius: 12px;
+    border: 0.5px solid var(--border);
+    color: var(--text2); cursor: pointer;
+    transition: all .12s; background: var(--bg);
+    font-weight: 500;
+  }
+  .chr-chip:hover { background: var(--bg2); border-color: var(--blue); color: var(--blue); }
+  .chr-chip.active { background: var(--blue); color: #fff; border-color: var(--blue); }
+
+  .table-wrap { overflow-y: auto; max-height: 380px; }
+  .table-hdr {
+    display: grid;
+    grid-template-columns: 28px 1fr 90px 100px 60px;
+    gap: 8px; padding: 7px 16px;
+    background: var(--bg2);
+    border-bottom: 0.5px solid var(--border);
+    position: sticky; top: 0; z-index: 2;
+  }
+  .table-hdr span {
+    font-size: 10px; color: var(--text3);
+    text-transform: uppercase; letter-spacing: .05em; font-weight: 500;
+  }
+  .gene-row {
+    display: grid;
+    grid-template-columns: 28px 1fr 90px 100px 60px;
+    gap: 8px; padding: 9px 16px;
+    border-bottom: 0.5px solid var(--border);
+    cursor: pointer;
+    transition: background .1s;
+    align-items: center;
+  }
+  .gene-row:hover { background: var(--bg2); }
+  .gene-row.selected { background: var(--blue-light); }
+  .gene-row:last-child { border-bottom: none; }
+  .rank-num { font-size: 11px; color: var(--text3); text-align: center; }
+  .gene-sym { font-size: 13px; font-weight: 500; color: var(--text); }
+  .gene-chr { font-size: 10px; color: var(--text3); }
+  .mut-pill {
+    font-size: 10px; padding: 2px 7px; border-radius: 10px;
+    font-weight: 500; text-align: center;
+    display: inline-block;
+  }
+  .mut-pill.high { background: var(--amber-light); color: var(--amber-dark); }
+  .mut-pill.med { background: var(--blue-light); color: var(--blue-dark); }
+  .mut-pill.low { background: var(--gray-light); color: var(--text2); }
+  .score-bar-wrap { height: 6px; background: var(--bg3); border-radius: 3px; overflow: hidden; }
+  .score-bar { height: 100%; border-radius: 3px; transition: width .4s ease; }
+  .score-num { font-size: 12px; font-weight: 500; color: var(--text); text-align: right; }
+
+  /* ── RIGHT DETAIL PANEL ── */
+  .detail-panel { display: flex; flex-direction: column; height: 100%; }
+  .detail-placeholder {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 40px 24px; text-align: center; gap: 14px; color: var(--text3);
+  }
+  .detail-placeholder .big-icon {
+    width: 56px; height: 56px; border-radius: 50%;
+    background: var(--bg2); display: flex; align-items: center; justify-content: center;
+    border: 0.5px solid var(--border);
+  }
+  .detail-placeholder p { font-size: 12px; line-height: 1.6; }
+
+  .gene-detail { padding: 16px; display: none; }
+  .gene-detail.show { display: block; }
+
+  .gd-header { margin-bottom: 14px; padding-bottom: 14px; border-bottom: 0.5px solid var(--border); }
+  .gd-name { font-size: 22px; font-weight: 500; color: var(--text); }
+  .gd-desc { font-size: 12px; color: var(--text2); line-height: 1.55; margin-top: 4px; }
+  .gd-pills { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 10px; }
+  .gd-pill {
+    font-size: 10px; padding: 3px 9px; border-radius: 12px;
+    font-weight: 500; border: 0.5px solid transparent;
+  }
+  .gd-pill.up { background: var(--green-light); color: var(--green-dark); }
+  .gd-pill.down { background: var(--red-light); color: var(--red-dark); }
+  .gd-pill.neu { background: var(--gray-light); color: var(--text2); }
+  .gd-pill.mut { background: var(--blue-light); color: var(--blue-dark); }
+  .gd-pill.path { background: var(--amber-light); color: var(--amber-dark); }
+
+  .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; }
+  .stat-box { background: var(--bg2); border-radius: var(--radius); padding: 10px 12px; }
+  .stat-box .sv { font-size: 17px; font-weight: 500; color: var(--text); }
+  .stat-box .sk { font-size: 10px; color: var(--text2); margin-top: 2px; }
+
+  /* mini expression bar */
+  .expr-section { margin-bottom: 14px; }
+  .expr-section h4 { font-size: 11px; font-weight: 500; color: var(--text2); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 8px; }
+  .expr-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+  .expr-lbl { font-size: 11px; color: var(--text2); width: 52px; }
+  .expr-bar-bg { flex: 1; height: 8px; background: var(--bg3); border-radius: 4px; overflow: hidden; }
+  .expr-bar-fill { height: 100%; border-radius: 4px; }
+  .expr-val { font-size: 11px; font-weight: 500; color: var(--text); width: 36px; text-align: right; }
+
+  /* ── AI SECTION ── */
+  .ai-section { border-top: 0.5px solid var(--border); padding-top: 14px; }
+  .ai-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .ai-title {
+    font-size: 11px; font-weight: 500; color: var(--text2);
+    text-transform: uppercase; letter-spacing: .05em;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .ai-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--blue); }
+  .ai-dot.pulse { animation: pulse 1.5s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(.8)} }
+
+  .ai-out {
+    font-size: 12px; color: var(--text); line-height: 1.7;
+    background: var(--bg2); border-radius: var(--radius);
+    padding: 12px; min-height: 80px;
+    border: 0.5px solid var(--border);
+  }
+  .ai-out.idle { color: var(--text3); font-style: italic; }
+  .ai-out.streaming { border-color: var(--blue); }
+
+  .ai-btn {
+    margin-top: 10px; width: 100%;
+    background: var(--bg);
+    border: 0.5px solid var(--border2);
+    border-radius: var(--radius);
+    padding: 8px 14px;
+    font-size: 12px; font-weight: 500;
+    color: var(--text); cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    transition: all .12s;
+  }
+  .ai-btn:hover:not(:disabled) { background: var(--blue-light); border-color: var(--blue); color: var(--blue-dark); }
+  .ai-btn:disabled { opacity: .5; cursor: not-allowed; }
+  .ai-btn .btn-icon { font-size: 14px; }
+
+  /* ── FOOTER STRIP ── */
+  .bottom-strip {
+    display: grid; grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+  }
+
+  /* ── SCROLLBAR ── */
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+  /* ── EMPTY STATE ── */
+  .empty-state { padding: 28px 16px; text-align: center; font-size: 12px; color: var(--text3); }
+
+  /* ── PATHWAY DIAGRAM ── */
+  .pathway { padding: 12px 16px; }
+  .pw-row { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; flex-wrap: wrap; }
+  .pw-node {
+    font-size: 10px; font-weight: 500;
+    padding: 4px 10px; border-radius: 4px;
+    border: 0.5px solid transparent;
+    cursor: pointer; transition: all .12s;
+    white-space: nowrap;
+  }
+  .pw-node:hover { transform: translateY(-1px); }
+  .pw-node.active-gene { box-shadow: 0 0 0 2px var(--blue); }
+  .pw-arrow { color: var(--text3); font-size: 14px; }
+  .pw-node.blue { background: var(--blue-light); color: var(--blue-dark); border-color: var(--blue-light); }
+  .pw-node.green { background: var(--green-light); color: var(--green-dark); border-color: var(--green-light); }
+  .pw-node.red { background: var(--red-light); color: var(--red-dark); border-color: var(--red-light); }
+  .pw-node.amber { background: var(--amber-light); color: var(--amber-dark); border-color: var(--amber-light); }
+  .pw-node.gray { background: var(--gray-light); color: var(--text2); border-color: var(--gray-light); }
+  .pw-node.purple { background: #EEEDFE; color: #26215C; border-color: #EEEDFE; }
+
+  .pw-label { font-size: 10px; color: var(--text3); margin-bottom: 4px; font-weight: 500; text-transform: uppercase; letter-spacing: .04em; }
+
+  /* chromosome mini-chart */
+  #chrCanvas { display: block; }
+
+  /* DATASET INFO */
+  .ds-grid { display: grid; grid-template-columns: 1fr; gap: 8px; padding: 14px 16px; }
+  .ds-row { display: flex; justify-content: space-between; align-items: center; }
+  .ds-key { font-size: 12px; color: var(--text2); }
+  .ds-val { font-size: 12px; font-weight: 500; color: var(--text); }
+  .ds-divider { height: 0.5px; background: var(--border); margin: 4px 0; }
+
+  @media (max-width: 1100px) {
+    .main-grid { grid-template-columns: 1fr 360px; }
+    .main-grid > .panel:first-child { grid-column: 1 / -1; }
+    .metrics { grid-template-columns: repeat(3, 1fr); }
+    .bottom-strip { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 720px) {
+    .main-grid { grid-template-columns: 1fr; }
+    .metrics { grid-template-columns: 1fr 1fr; }
+    .bottom-strip { grid-template-columns: 1fr; }
+    .page { padding: 12px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-left">
+    <div class="nav-logo">
+      <svg viewBox="0 0 24 24"><path d="M12 2C7.03 2 3 6.03 3 11c0 3.1 1.5 5.8 3.8 7.5L6 22l3.7-1.5c.7.2 1.5.3 2.3.3 4.97 0 9-4.03 9-9s-4.03-9-9-9zm0 16c-.7 0-1.3-.1-1.9-.2l-2.1.9.3-2.2C6.9 15.3 5 13.3 5 11c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7z"/></svg>
+    </div>
+    <div>
+      <div class="nav-title">Lung Cancer Gene Intelligence Center</div>
+      <div class="nav-sub">Bioinformatics Analysis · NCBI Gene + ClinVar + GEO</div>
+    </div>
+  </div>
+  <div class="nav-badges">
+    <span class="badge">GSE19804</span>
+    <span class="badge">120 samples</span>
+    <span class="badge">Affymetrix HGU133Plus2</span>
+    <span class="badge">Non-smoking female · Taiwan</span>
+  </div>
+</nav>
+
+<div class="page">
+
+  <!-- METRICS -->
+  <div class="metrics" id="metricsRow"></div>
+
+  <!-- MAIN -->
+  <div class="main-grid">
+
+    <!-- VOLCANO -->
+    <div class="panel">
+      <div class="panel-header">
+        <div>
+          <div class="panel-title">Volcano plot — differential expression</div>
+          <div class="panel-sub">Tumor vs normal tissue · GSE19804 · bubble size = mutation burden</div>
+        </div>
+      </div>
+      <div class="volcano-legend">
+        <div class="leg-item"><div class="leg-dot" style="background:var(--green);border-radius:50%"></div>Up-regulated</div>
+        <div class="leg-item"><div class="leg-dot" style="background:var(--red);border-radius:0"></div>Down-regulated</div>
+        <div class="leg-item"><div class="leg-dot" style="background:var(--gray);transform:rotate(45deg)"></div>Neutral</div>
+        <div class="leg-item" style="margin-left:auto;font-style:italic;font-size:10px">Hover for details · bubble = mutation count</div>
+      </div>
+      <div class="volcano-container">
+        <canvas id="volcanoChart" role="img" aria-label="Volcano plot showing differentially expressed lung cancer genes. TP53 and EGFR are highly up-regulated."></canvas>
+      </div>
+    </div>
+
+    <!-- RANKING TABLE -->
+    <div class="panel">
+      <div class="panel-header">
+        <div>
+          <div class="panel-title">Gene susceptibility rankings</div>
+          <div class="panel-sub">Composite score: 50% ClinVar + 50% GEO expression</div>
+        </div>
+      </div>
+      <div class="chr-filter" id="chrFilter"></div>
+      <div class="table-filters">
+        <div class="filter-group">
+          <label>Min score</label>
+          <input type="range" id="minScore" min="0" max="9" step="0.5" value="0">
+          <span class="rv" id="minScoreVal">0.0</span>
+        </div>
+        <div class="filter-group">
+          <label>Sort by</label>
+          <select id="sortBy">
+            <option value="score">Final score</option>
+            <option value="mut">Mutations</option>
+            <option value="fc">|Log2 FC|</option>
+            <option value="pval">p-value</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label>Show</label>
+          <select id="dirFilter">
+            <option value="all">All genes</option>
+            <option value="up">Up-regulated</option>
+            <option value="down">Down-regulated</option>
+          </select>
+        </div>
+      </div>
+      <div class="table-hdr">
+        <span>#</span>
+        <span>Gene</span>
+        <span>Variants</span>
+        <span>Score</span>
+        <span>Score</span>
+      </div>
+      <div class="table-wrap" id="geneTable"></div>
+    </div>
+
+    <!-- DETAIL PANEL -->
+    <div class="panel detail-panel" style="min-height:600px">
+      <div class="panel-header">
+        <div class="panel-title">Gene deep-dive</div>
+        <div class="panel-sub" id="detailHint">click any gene →</div>
+      </div>
+      <div style="overflow-y:auto;flex:1">
+
+        <div class="detail-placeholder" id="detailPlaceholder">
+          <div class="big-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+              <circle cx="12" cy="12" r="9"/>
+              <path d="M8 12 Q10 8 12 12 Q14 16 16 12" stroke-linecap="round"/>
+              <circle cx="8" cy="12" r="1.5" fill="currentColor"/>
+              <circle cx="16" cy="12" r="1.5" fill="currentColor"/>
+            </svg>
+          </div>
+          <p>Select a gene from the ranking table to explore its expression profile, mutation data, pathway context, and an AI-generated clinical summary.</p>
+        </div>
+
+        <div class="gene-detail" id="geneDetail">
+          <div class="gd-header">
+            <div class="gd-name" id="gdName"></div>
+            <div class="gd-desc" id="gdDesc"></div>
+            <div class="gd-pills" id="gdPills"></div>
+          </div>
+
+          <div class="stat-grid" id="gdStats"></div>
+
+          <div class="expr-section">
+            <h4>Expression profile</h4>
+            <div class="expr-row">
+              <div class="expr-lbl">Tumor</div>
+              <div class="expr-bar-bg"><div class="expr-bar-fill" id="exprTumor" style="background:var(--red)"></div></div>
+              <div class="expr-val" id="exprTumorVal"></div>
+            </div>
+            <div class="expr-row">
+              <div class="expr-lbl">Normal</div>
+              <div class="expr-bar-bg"><div class="expr-bar-fill" id="exprNormal" style="background:var(--blue)"></div></div>
+              <div class="expr-val" id="exprNormalVal"></div>
+            </div>
+          </div>
+
+          <div class="ai-section">
+            <div class="ai-header">
+              <div class="ai-title">
+                <div class="ai-dot" id="aiDot"></div>
+                AI clinical context
+              </div>
+            </div>
+            <div class="ai-out idle" id="aiOut">Click "Generate AI insight" to get a real-time clinical explanation of this gene's role in lung cancer — powered by Claude.</div>
+            <button class="ai-btn" id="aiBtn" onclick="generateAI()">
+              <span class="btn-icon">✦</span>
+              Generate AI insight
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <!-- BOTTOM STRIP -->
+  <div class="bottom-strip">
+
+    <!-- Chromosome distribution chart -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">Chromosomal distribution</div>
+        <div class="panel-sub">Gene count per chromosome</div>
+      </div>
+      <div style="padding:12px;position:relative;height:200px">
+        <canvas id="chrChart" role="img" aria-label="Bar chart showing lung cancer genes distributed across chromosomes. Chromosome 7 has the most genes."></canvas>
+      </div>
+    </div>
+
+    <!-- Pathway context -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">Pathway map</div>
+        <div class="panel-sub">Key signaling routes in lung cancer</div>
+      </div>
+      <div class="pathway">
+        <div class="pw-label">Growth signaling</div>
+        <div class="pw-row">
+          <div class="pw-node blue" id="pw-EGFR" onclick="clickPathwayGene('EGFR')">EGFR</div>
+          <div class="pw-arrow">→</div>
+          <div class="pw-node blue" id="pw-ERBB2" onclick="clickPathwayGene('ERBB2')">ERBB2</div>
+          <div class="pw-arrow">→</div>
+          <div class="pw-node green" id="pw-KRAS" onclick="clickPathwayGene('KRAS')">KRAS</div>
+          <div class="pw-arrow">→</div>
+          <div class="pw-node green" id="pw-BRAF" onclick="clickPathwayGene('BRAF')">BRAF</div>
+          <div class="pw-arrow">→</div>
+          <div class="pw-node green" id="pw-MET" onclick="clickPathwayGene('MET')">MET</div>
+        </div>
+        <div class="pw-label" style="margin-top:8px">PI3K / AKT axis</div>
+        <div class="pw-row">
+          <div class="pw-node blue" id="pw-PIK3CA" onclick="clickPathwayGene('PIK3CA')">PIK3CA</div>
+          <div class="pw-arrow">→</div>
+          <div class="pw-node red" id="pw-PTEN" onclick="clickPathwayGene('PTEN')">PTEN ⊣</div>
+          <div class="pw-arrow">→</div>
+          <div class="pw-node amber" id="pw-STK11" onclick="clickPathwayGene('STK11')">STK11</div>
+        </div>
+        <div class="pw-label" style="margin-top:8px">Apoptosis / DNA repair</div>
+        <div class="pw-row">
+          <div class="pw-node purple" id="pw-TP53" onclick="clickPathwayGene('TP53')">TP53</div>
+          <div class="pw-arrow">→</div>
+          <div class="pw-node red" id="pw-CDKN2A" onclick="clickPathwayGene('CDKN2A')">CDKN2A</div>
+          <div class="pw-arrow">→</div>
+          <div class="pw-node red" id="pw-RB1" onclick="clickPathwayGene('RB1')">RB1</div>
+          <div class="pw-arrow">→</div>
+          <div class="pw-node gray" id="pw-CASP8" onclick="clickPathwayGene('CASP8')">CASP8</div>
+          <div class="pw-arrow">→</div>
+          <div class="pw-node gray" id="pw-BRCA2" onclick="clickPathwayGene('BRCA2')">BRCA2</div>
+        </div>
+        <div class="pw-label" style="margin-top:8px">Immune / inflammation</div>
+        <div class="pw-row">
+          <div class="pw-node amber" id="pw-TNF" onclick="clickPathwayGene('TNF')">TNF</div>
+          <div class="pw-arrow">→</div>
+          <div class="pw-node amber" id="pw-IL6" onclick="clickPathwayGene('IL6')">IL6</div>
+          <div class="pw-arrow">→</div>
+          <div class="pw-node blue" id="pw-NFE2L2" onclick="clickPathwayGene('NFE2L2')">NFE2L2</div>
+        </div>
+        <div style="margin-top:10px;font-size:10px;color:var(--text3)">Click any node to select the gene in the detail panel.</div>
+      </div>
+    </div>
+
+    <!-- Dataset info -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">Dataset overview</div>
+        <div class="panel-sub">Three integrated NCBI sources</div>
+      </div>
+      <div class="ds-grid">
+        <div class="ds-row"><span class="ds-key">Source 1 — NCBI Gene</span><span class="ds-val">20 genes</span></div>
+        <div class="ds-row"><span class="ds-key">Organism</span><span class="ds-val">Homo sapiens</span></div>
+        <div class="ds-row"><span class="ds-key">Chromosomes spanned</span><span class="ds-val">1, 2, 3, 5, 6, 7, 9, 10, 12, 13, 15, 17, 19</span></div>
+        <div class="ds-divider"></div>
+        <div class="ds-row"><span class="ds-key">Source 2 — ClinVar</span><span class="ds-val">104 variants</span></div>
+        <div class="ds-row"><span class="ds-key">Pathogenic</span><span class="ds-val">38 (36.5%)</span></div>
+        <div class="ds-row"><span class="ds-key">Likely pathogenic</span><span class="ds-val">66 (63.5%)</span></div>
+        <div class="ds-divider"></div>
+        <div class="ds-row"><span class="ds-key">Source 3 — GEO: GSE19804</span><span class="ds-val">120 samples</span></div>
+        <div class="ds-row"><span class="ds-key">Tumor samples</span><span class="ds-val">60</span></div>
+        <div class="ds-row"><span class="ds-key">Normal adjacent</span><span class="ds-val">60</span></div>
+        <div class="ds-row"><span class="ds-key">Platform</span><span class="ds-val">Affymetrix HGU133Plus2</span></div>
+        <div class="ds-row"><span class="ds-key">Probes analyzed</span><span class="ds-val">54,675</span></div>
+        <div class="ds-divider"></div>
+        <div class="ds-row"><span class="ds-key">Scoring model</span><span class="ds-val">Multi-criteria weighted</span></div>
+        <div class="ds-row"><span class="ds-key">Formula</span><span class="ds-val">0.5 × ClinVar + 0.5 × GEO</span></div>
+        <div class="ds-row"><span class="ds-key">Normalization</span><span class="ds-val">Min-Max (0–10)</span></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+/* ── DATA ── */
+const GENES = [
+  {sym:"TP53",  chr:"17", desc:"Master guardian of the genome; transcription factor activating DNA repair, apoptosis, and cell cycle arrest. Most frequently mutated gene in human cancers.", mut:22, tumorExpr:8.4, normalExpr:4.5, lfc:1.84, pval:0.003, score:9.4, type:"up"},
+  {sym:"EGFR",  chr:"7",  desc:"Epidermal growth factor receptor; a receptor tyrosine kinase that drives cell proliferation. Activating mutations define a major subtype of NSCLC with targeted therapy options.", mut:18, tumorExpr:10.2, normalExpr:4.9, lfc:2.10, pval:0.001, score:9.1, type:"up"},
+  {sym:"KRAS",  chr:"12", desc:"GTPase that relays growth signals from receptor tyrosine kinases. Oncogenic KRAS mutations lock the protein in its active GTP-bound state, driving proliferation.", mut:14, tumorExpr:7.8, normalExpr:5.1, lfc:1.52, pval:0.008, score:8.6, type:"up"},
+  {sym:"PRKN",  chr:"6",  desc:"Parkin E3 ubiquitin ligase; functions as a tumor suppressor by regulating mitophagy and cell death. Loss of PRKN promotes tumor survival.", mut:20, tumorExpr:3.2, normalExpr:6.8, lfc:-0.90, pval:0.020, score:8.3, type:"down"},
+  {sym:"PIK3CA", chr:"3", desc:"Catalytic subunit of PI3-kinase; activates the AKT/mTOR survival pathway. Gain-of-function mutations occur in multiple cancer types including lung.", mut:12, tumorExpr:7.1, normalExpr:5.5, lfc:1.30, pval:0.010, score:8.0, type:"up"},
+  {sym:"ALK",   chr:"2",  desc:"Receptor tyrosine kinase rearranged by chromosomal inversions in ~5% of NSCLC. ALK fusions are targetable by crizotinib and alectinib.", mut:10, tumorExpr:6.5, normalExpr:5.0, lfc:0.80, pval:0.040, score:7.5, type:"up"},
+  {sym:"BRAF",  chr:"7",  desc:"Serine/threonine kinase in the RAS-RAF-MEK-ERK cascade. BRAF V600E mutations occur in ~2% of NSCLC and respond to targeted BRAF inhibitors.", mut:8, tumorExpr:6.2, normalExpr:4.9, lfc:0.72, pval:0.050, score:7.0, type:"up"},
+  {sym:"ERBB2", chr:"17", desc:"HER2 receptor tyrosine kinase; amplified or mutated in a subset of lung adenocarcinomas. Increasingly targetable with HER2-directed therapies.", mut:7, tumorExpr:5.9, normalExpr:4.7, lfc:0.65, pval:0.060, score:6.7, type:"up"},
+  {sym:"TERT",  chr:"5",  desc:"Catalytic subunit of telomerase; maintains telomere length enabling replicative immortality. TERT promoter mutations are among the most common in cancer.", mut:6, tumorExpr:7.0, normalExpr:5.2, lfc:1.10, pval:0.015, score:6.5, type:"up"},
+  {sym:"MET",   chr:"7",  desc:"Hepatocyte growth factor receptor; MET exon 14 skipping mutations and amplifications are actionable drivers in NSCLC.", mut:5, tumorExpr:6.8, normalExpr:5.4, lfc:0.95, pval:0.030, score:6.2, type:"up"},
+  {sym:"PTEN",  chr:"10", desc:"Phosphatase and tensin homolog; negatively regulates the PI3K-AKT pathway. Frequent loss in lung cancer activates downstream survival signaling.", mut:4, tumorExpr:3.8, normalExpr:7.0, lfc:-1.20, pval:0.010, score:6.0, type:"down"},
+  {sym:"STK11", chr:"19", desc:"LKB1 serine/threonine kinase; suppresses mTOR activity and coordinates metabolic signaling. Often co-mutated with KRAS in aggressive lung adenocarcinoma.", mut:5, tumorExpr:4.0, normalExpr:6.2, lfc:-0.75, pval:0.040, score:5.8, type:"down"},
+  {sym:"CDKN2A",chr:"9",  desc:"Encodes p16INK4A and p14ARF; regulates cell cycle via CDK4/6 and MDM2/TP53 axes. Homozygous deletion is frequent in lung cancer.", mut:3, tumorExpr:3.5, normalExpr:6.5, lfc:-1.00, pval:0.025, score:5.5, type:"down"},
+  {sym:"NFE2L2",chr:"2",  desc:"Transcription factor NRF2; master regulator of oxidative stress response. Gain-of-function mutations promote antioxidant programs that help tumors survive.", mut:4, tumorExpr:6.0, normalExpr:5.2, lfc:0.60, pval:0.070, score:5.2, type:"up"},
+  {sym:"SMAD3", chr:"15", desc:"Transcriptional mediator of TGF-β signaling. Context-dependent roles: tumor suppressive early, pro-metastatic late in disease progression.", mut:2, tumorExpr:4.2, normalExpr:5.6, lfc:-0.50, pval:0.090, score:4.8, type:"down"},
+  {sym:"CASP8", chr:"2",  desc:"Initiator caspase of the extrinsic apoptosis pathway. Inactivating mutations allow cancer cells to evade immune-mediated cell death.", mut:3, tumorExpr:3.9, normalExpr:5.0, lfc:-0.40, pval:0.120, score:4.5, type:"down"},
+  {sym:"TNF",   chr:"6",  desc:"Tumor necrosis factor alpha; pleotropic cytokine with context-dependent roles in tumor promotion and suppression within the tumor microenvironment.", mut:2, tumorExpr:5.8, normalExpr:5.2, lfc:0.35, pval:0.150, score:4.1, type:"up"},
+  {sym:"BRCA2", chr:"13", desc:"DNA double-strand break repair via homologous recombination. Germline BRCA2 mutations confer increased risk of multiple cancers including lung.", mut:2, tumorExpr:4.5, normalExpr:5.5, lfc:-0.30, pval:0.180, score:3.8, type:"down"},
+  {sym:"ERCC2", chr:"19", desc:"XPD helicase subunit of TFIIH; essential for nucleotide excision repair. Germline variants associated with chemotherapy sensitivity in lung cancer.", mut:1, tumorExpr:5.1, normalExpr:4.9, lfc:0.25, pval:0.220, score:3.2, type:"neu"},
+  {sym:"IL6",   chr:"7",  desc:"Interleukin-6; pleiotropic cytokine promoting the STAT3 signaling axis. Elevated IL6 in the tumor microenvironment supports immune evasion.", mut:1, tumorExpr:5.6, normalExpr:4.9, lfc:0.42, pval:0.110, score:3.0, type:"up"},
+];
+
+let filtered = [...GENES];
+let activeGene = null;
+let volcanoChart = null;
+let chrChart = null;
+
+/* ── METRICS ── */
+function renderMetrics(){
+  const up   = GENES.filter(g=>g.type==="up").length;
+  const down = GENES.filter(g=>g.type==="down").length;
+  const totalMut = GENES.reduce((s,g)=>s+g.mut,0);
+  const topGene  = [...GENES].sort((a,b)=>b.score-a.score)[0];
+  const avg = (GENES.reduce((s,g)=>s+g.score,0)/GENES.length).toFixed(1);
+
+  document.getElementById("metricsRow").innerHTML = [
+    {cls:"accent-blue",  icon:"🧬", val:GENES.length, lbl:"Total genes analyzed",   sub:"NCBI Gene database"},
+    {cls:"accent-amber", icon:"⚠️", val:totalMut,     lbl:"Pathogenic variants",    sub:"ClinVar · Pathogenic + LP"},
+    {cls:"accent-green", icon:"↑",  val:up+" genes",  lbl:"Up-regulated in tumor",  sub:"p < 0.1 · GSE19804"},
+    {cls:"accent-red",   icon:"↓",  val:down+" genes",lbl:"Down-regulated in tumor",sub:"p < 0.1 · GSE19804"},
+    {cls:"accent-purple",icon:"★",  val:topGene.sym,  lbl:"Top susceptibility gene",sub:"Score "+topGene.score.toFixed(1)+" / 10"},
+  ].map(m=>`
+    <div class="metric-card ${m.cls}">
+      <div class="icon">${m.icon}</div>
+      <div class="val">${m.val}</div>
+      <div class="lbl">${m.lbl}</div>
+      <div class="sub">${m.sub}</div>
+    </div>
+  `).join("");
+}
+
+/* ── CHROMOSOME FILTER ── */
+let activeChr = "all";
+function buildChrFilter(){
+  const chrs = [...new Set(GENES.map(g=>g.chr))].sort((a,b)=>isNaN(+a)?1:isNaN(+b)?-1:+a-+b);
+  document.getElementById("chrFilter").innerHTML =
+    `<span class="chr-chip active" onclick="setChr(this,'all')">All</span>` +
+    chrs.map(c=>`<span class="chr-chip" onclick="setChr(this,'${c}')">Chr ${c}</span>`).join("");
+}
+function setChr(el,chr){
+  document.querySelectorAll(".chr-chip").forEach(e=>e.classList.remove("active"));
+  el.classList.add("active");
+  activeChr = chr;
+  applyFilters();
+}
+
+/* ── FILTERS & SORT ── */
+document.getElementById("minScore").addEventListener("input",function(){
+  document.getElementById("minScoreVal").textContent = parseFloat(this.value).toFixed(1);
+  applyFilters();
+});
+document.getElementById("sortBy").addEventListener("change", applyFilters);
+document.getElementById("dirFilter").addEventListener("change", applyFilters);
+
+function applyFilters(){
+  const minS  = +document.getElementById("minScore").value;
+  const sortBy= document.getElementById("sortBy").value;
+  const dir   = document.getElementById("dirFilter").value;
+  filtered = GENES
+    .filter(g=>(activeChr==="all"||g.chr===activeChr) && g.score>=minS && (dir==="all"||g.type===dir))
+    .sort((a,b)=>{
+      if(sortBy==="mut")  return b.mut-a.mut;
+      if(sortBy==="fc")   return Math.abs(b.lfc)-Math.abs(a.lfc);
+      if(sortBy==="pval") return a.pval-b.pval;
+      return b.score-a.score;
+    });
+  renderTable();
+  updateVolcano();
+}
+
+/* ── TABLE ── */
+function renderTable(){
+  const maxScore = 10;
+  const html = filtered.map((g,i)=>{
+    const pct = (g.score/maxScore*100).toFixed(0);
+    const barColor = g.type==="up"?"#1D9E75":g.type==="down"?"#D85A30":"#888780";
+    const mutCls = g.mut>10?"high":g.mut>5?"med":"low";
+    const isSel = activeGene && activeGene.sym===g.sym;
+    return `<div class="gene-row${isSel?" selected":""}" onclick="selectGene('${g.sym}')">
+      <span class="rank-num">${i+1}</span>
+      <div><div class="gene-sym">${g.sym}</div><div class="gene-chr">Chr ${g.chr}</div></div>
+      <span class="mut-pill ${mutCls}">${g.mut} vars</span>
+      <div><div class="score-bar-wrap"><div class="score-bar" style="width:${pct}%;background:${barColor}"></div></div></div>
+      <span class="score-num">${g.score.toFixed(1)}</span>
+    </div>`;
+  }).join("") || `<div class="empty-state">No genes match current filters. Try adjusting the criteria above.</div>`;
+  document.getElementById("geneTable").innerHTML = html;
+}
+
+/* ── SELECT GENE ── */
+function selectGene(sym){
+  activeGene = GENES.find(g=>g.sym===sym);
+  if(!activeGene) return;
+  renderTable();
+  showDetail(activeGene);
+  highlightPathway(sym);
+  document.getElementById("detailHint").textContent = activeGene.sym;
+  document.getElementById("aiOut").textContent = 'Click "Generate AI insight" to get a real-time clinical explanation of this gene\'s role in lung cancer — powered by Claude.';
+  document.getElementById("aiOut").className = "ai-out idle";
+  document.getElementById("aiBtn").disabled = false;
+  document.getElementById("aiBtn").innerHTML = '<span class="btn-icon">✦</span> Generate AI insight';
+  document.getElementById("aiDot").classList.remove("pulse");
+}
+
+function showDetail(g){
+  document.getElementById("detailPlaceholder").style.display = "none";
+  const d = document.getElementById("geneDetail");
+  d.classList.add("show");
+
+  document.getElementById("gdName").textContent = g.sym;
+  document.getElementById("gdDesc").textContent = g.desc;
+
+  const dirPill = g.type==="up"
+    ? `<span class="gd-pill up">↑ Up-regulated</span>`
+    : g.type==="down"
+    ? `<span class="gd-pill down">↓ Down-regulated</span>`
+    : `<span class="gd-pill neu">Neutral</span>`;
+  const mutPill = `<span class="gd-pill mut">${g.mut} ClinVar variants</span>`;
+  const pathPill = g.mut > 8 ? `<span class="gd-pill path">High mutation burden</span>` : "";
+  document.getElementById("gdPills").innerHTML = dirPill + mutPill + pathPill;
+
+  document.getElementById("gdStats").innerHTML = `
+    <div class="stat-box"><div class="sv">${g.lfc>0?"+":""}${g.lfc.toFixed(2)}</div><div class="sk">Log₂ fold-change</div></div>
+    <div class="stat-box"><div class="sv">${g.pval.toFixed(3)}</div><div class="sk">p-value (t-test)</div></div>
+    <div class="stat-box"><div class="sv">${g.mut}</div><div class="sk">Pathogenic variants</div></div>
+    <div class="stat-box"><div class="sv">${g.score.toFixed(1)} / 10</div><div class="sk">Susceptibility score</div></div>
+  `;
+
+  const maxExpr = 12;
+  const tPct = Math.min(100,(g.tumorExpr/maxExpr*100)).toFixed(0);
+  const nPct = Math.min(100,(g.normalExpr/maxExpr*100)).toFixed(0);
+  document.getElementById("exprTumor").style.width = tPct+"%";
+  document.getElementById("exprNormal").style.width = nPct+"%";
+  document.getElementById("exprTumorVal").textContent = g.tumorExpr.toFixed(1);
+  document.getElementById("exprNormalVal").textContent = g.normalExpr.toFixed(1);
+}
+
+function highlightPathway(sym){
+  document.querySelectorAll(".pw-node").forEach(n=>n.classList.remove("active-gene"));
+  const nd = document.getElementById("pw-"+sym);
+  if(nd) nd.classList.add("active-gene");
+}
+
+function clickPathwayGene(sym){
+  selectGene(sym);
+  document.getElementById("geneDetail").scrollIntoView({behavior:"smooth",block:"nearest"});
+}
+
+/* ── AI GENERATION ── */
+async function generateAI(){
+  if(!activeGene) return;
+  const btn = document.getElementById("aiBtn");
+  const out = document.getElementById("aiOut");
+  const dot = document.getElementById("aiDot");
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="btn-icon">⟳</span> Generating...';
+  out.className = "ai-out streaming";
+  out.textContent = "";
+  dot.classList.add("pulse");
+
+  const g = activeGene;
+  const prompt = `You are a bioinformatics and oncology expert. The gene ${g.sym} has been identified as a key lung cancer susceptibility gene from an integrated analysis of NCBI Gene, ClinVar (${g.mut} pathogenic/likely-pathogenic variants), and GEO dataset GSE19804 (60 tumor vs 60 normal non-smoking female Taiwanese patients).
+
+Expression data: ${g.type==="up"?"Up-regulated":"g.type==='down'?'Down-regulated':'Neutrally expressed'"} in tumor tissue. Log₂ fold-change = ${g.lfc.toFixed(2)}. Mean tumor expression = ${g.tumorExpr.toFixed(1)}, mean normal expression = ${g.normalExpr.toFixed(1)}. p-value = ${g.pval.toFixed(3)}.
+
+Composite susceptibility score = ${g.score.toFixed(1)} / 10.
+
+Please write a clear, scientific yet readable 5–6 sentence clinical summary covering:
+1. The gene's normal biological function
+2. How its observed expression change (${g.type==="up"?"up":"down"}-regulation, log2FC=${g.lfc.toFixed(2)}) contributes to lung cancer biology
+3. The significance of the ${g.mut} ClinVar pathogenic variants
+4. Any known clinical relevance, therapeutic targeting, or prognostic value in lung cancer
+5. Why this gene scored ${g.score.toFixed(1)}/10 in this integrated susceptibility analysis
+
+Keep it to 5–6 concise sentences. Use scientific language suitable for a bioinformatics research report.`;
+
+  try {
+    const resp = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 1000,
+        messages: [{ role: "user", content: prompt }]
+      })
+    });
+
+    if(!resp.ok){
+      const err = await resp.json().catch(()=>({}));
+      throw new Error(err.error?.message || "API error "+resp.status);
+    }
+
+    const data = await resp.json();
+    const text = (data.content||[]).map(b=>b.text||"").join("").trim();
+    out.className = "ai-out";
+    out.textContent = text || "No response generated. Please try again.";
+    btn.innerHTML = '<span class="btn-icon">✦</span> Regenerate';
+  } catch(err) {
+    out.className = "ai-out idle";
+    out.textContent = "⚠ " + (err.message || "Could not reach the AI. Check your internet connection and try again.");
+    btn.innerHTML = '<span class="btn-icon">↺</span> Retry';
+  }
+
+  btn.disabled = false;
+  dot.classList.remove("pulse");
+}
+
+/* ── VOLCANO CHART ── */
+function buildVolcano(){
+  const canvas = document.getElementById("volcanoChart");
+  const wrap = canvas.parentElement;
+  canvas.style.width = "100%";
+
+  const isDark = window.matchMedia("(prefers-color-scheme:dark)").matches;
+  const gridColor = isDark ? "rgba(255,255,255,.06)" : "rgba(0,0,0,.05)";
+  const tickColor = isDark ? "#666" : "#999";
+  const labelColor = isDark ? "#aaa" : "#666";
+
+  const makeDS = (type, color, shape) => ({
+    label: type,
+    data: GENES.filter(g=>g.type===type).map(g=>({
+      x: g.lfc,
+      y: -Math.log10(g.pval),
+      r: Math.max(6, g.mut * 1.6),
+      label: g.sym,
+      gene: g.sym
+    })),
+    backgroundColor: color + "bb",
+    borderColor: color,
+    borderWidth: 1,
+    pointStyle: shape
+  });
+
+  if(volcanoChart) volcanoChart.destroy();
+
+  volcanoChart = new Chart(canvas, {
+    type: "bubble",
+    data: {
+      datasets: [
+        makeDS("up",  "#1D9E75", "circle"),
+        makeDS("down","#D85A30", "triangle"),
+        makeDS("neu", "#888780", "rect"),
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      onClick(evt, elements){
+        if(elements.length){
+          const ds = volcanoChart.data.datasets[elements[0].datasetIndex];
+          const pt = ds.data[elements[0].index];
+          selectGene(pt.gene);
+        }
+      },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label(ctx){
+              const d = ctx.raw;
+              return [`${d.label}`, `log₂FC: ${d.x.toFixed(2)}`, `-log₁₀(p): ${d.y.toFixed(2)}`];
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          title: { display:true, text:"log₂ fold-change  (Tumor / Normal)", color:labelColor, font:{size:11} },
+          grid: { color:gridColor },
+          ticks: { color:tickColor, font:{size:10} },
+          min: -1.8, max: 2.8
+        },
+        y: {
+          title: { display:true, text:"-log₁₀ (p-value)", color:labelColor, font:{size:11} },
+          grid: { color:gridColor },
+          ticks: { color:tickColor, font:{size:10} },
+          min: 0, max: 3.5
+        }
+      },
+      layout: { padding: { top:10, right:20, bottom:0, left:0 } }
+    },
+    plugins: [{
+      id: "geneLabels",
+      afterDatasetsDraw(chart){
+        const ctx = chart.ctx;
+        const isDark = window.matchMedia("(prefers-color-scheme:dark)").matches;
+        chart.data.datasets.forEach((ds, di)=>{
+          ds.data.forEach((pt, pi)=>{
+            const meta = chart.getDatasetMeta(di);
+            const el   = meta.data[pi];
+            if(!el) return;
+            ctx.save();
+            ctx.fillStyle = isDark ? "rgba(210,210,200,.9)" : "rgba(40,40,40,.85)";
+            ctx.font = "500 9.5px -apple-system, sans-serif";
+            ctx.fillText(pt.label, el.x + el.options.radius + 3, el.y - 2);
+            ctx.restore();
+          });
+        });
+      }
+    }]
+  });
+}
+
+function updateVolcano(){
+  if(!volcanoChart) return;
+  const filteredSyms = new Set(filtered.map(g=>g.sym));
+  volcanoChart.data.datasets.forEach((ds, di)=>{
+    const type = ["up","down","neu"][di];
+    ds.data = GENES.filter(g=>g.type===type && (filteredSyms.has(g.sym)||filteredSyms.size===GENES.length)).map(g=>({
+      x: g.lfc, y: -Math.log10(g.pval),
+      r: Math.max(6, g.mut*1.6),
+      label: g.sym, gene: g.sym
+    }));
+  });
+  volcanoChart.update();
+}
+
+/* ── CHR CHART ── */
+function buildChrChart(){
+  const isDark = window.matchMedia("(prefers-color-scheme:dark)").matches;
+  const chrCount = {};
+  GENES.forEach(g=>{ chrCount[g.chr] = (chrCount[g.chr]||0)+1; });
+  const sorted = Object.entries(chrCount).sort((a,b)=>isNaN(+a[0])?1:isNaN(+b[0])?-1:+a[0]-+b[0]);
+  const labels = sorted.map(x=>"Chr "+x[0]);
+  const vals   = sorted.map(x=>x[1]);
+  const colors = sorted.map((_,i)=>{
+    const ramp = ["#378ADD","#1D9E75","#D85A30","#BA7517","#534AB7","#0F6E56","#888780"];
+    return ramp[i % ramp.length] + "cc";
+  });
+
+  const canvas = document.getElementById("chrChart");
+  if(chrChart) chrChart.destroy();
+  chrChart = new Chart(canvas, {
+    type:"bar",
+    data:{
+      labels,
+      datasets:[{
+        label:"Genes",
+        data:vals,
+        backgroundColor:colors,
+        borderRadius:3,
+        borderSkipped:false
+      }]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`${c.raw} gene${c.raw>1?"s":""}`}}},
+      scales:{
+        x:{grid:{display:false},ticks:{color:isDark?"#777":"#999",font:{size:9},maxRotation:45}},
+        y:{grid:{color:isDark?"rgba(255,255,255,.06)":"rgba(0,0,0,.05)"},ticks:{color:isDark?"#777":"#999",font:{size:10},stepSize:1}}
+      },
+      layout:{padding:{top:8}}
+    }
+  });
+}
+
+/* ── INIT ── */
+renderMetrics();
+buildChrFilter();
+applyFilters();
+window.addEventListener("load",()=>{
+  setTimeout(()=>{ buildVolcano(); buildChrChart(); }, 150);
+});
+</script>
+</body>
+</html>
