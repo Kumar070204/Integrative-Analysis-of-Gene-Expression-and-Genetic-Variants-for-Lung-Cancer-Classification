@@ -1,7 +1,7 @@
 # 🧬 Integrative Analysis of Gene Expression and Genetic Variants for Lung Cancer Classification
 
 <p align="center">
-  <img src="gene.jpg" alt="Gene Visualization" width="800"/>
+  <img src="gene.jpg" alt="Gene Visualization" width="600" height="400"/>
 </p>
 
 <p align="center">
