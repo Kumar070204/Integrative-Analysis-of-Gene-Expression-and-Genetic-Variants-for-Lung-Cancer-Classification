@@ -1,8 +1,14 @@
 # 🧬 Integrative Analysis of Gene Expression and Genetic Variants for Lung Cancer Classification
-<img src="gene.jpeg" alt="Alt Text" width="400"/>
-![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)
-![Machine Learning](https://img.shields.io/badge/Machine%20Learning-Random%20Forest%20%7C%20SVM%20%7C%20LogReg-orange)
-![Bioinformatics](https://img.shields.io/badge/Bioinformatics-GEO%20%7C%20ClinVar-green)
+
+<p align="center">
+  <img src="gene.jpeg" alt="Gene Visualization" width="400"/>
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Python-3.8+-blue.svg"/>
+  <img src="https://img.shields.io/badge/Machine%20Learning-Random%20Forest%20%7C%20SVM%20%7C%20LogReg-orange"/>
+  <img src="https://img.shields.io/badge/Bioinformatics-GEO%20%7C%20ClinVar-green"/>
+</p>
 
 A comprehensive bioinformatics and machine learning pipeline that integrates genetic variant data with gene expression profiles to classify lung normal vs. tumor tissues and discover key biomarker genes.
 
